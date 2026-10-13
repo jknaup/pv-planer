@@ -3,7 +3,7 @@ const frame=document.getElementById('app'),results=document.getElementById('resu
 function check(name,fn){const li=document.createElement('li');try{if(!fn())throw Error('Erwarteter Zustand nicht erreicht');li.textContent='✓ '+name;li.className='ok'}catch(e){li.textContent='✗ '+name+' – '+e.message;li.className='fail'}results.append(li)}
 function run(){results.replaceChildren();const w=frame.contentWindow;if(!w||!w.document.getElementById('project'))return;const e=src=>w.eval(src);
 check('JavaScript-Anwendung startet',()=>!!w.document.getElementById('summary').textContent);
-check('XML v2 exportiert',()=>e('serialize()').includes('<solarProject version="2">'));
+check('XML v3 exportiert',()=>e('serialize()').includes('<solarProject version="3">'));
 const original=e('serialize()');
 check('XML-v2-Roundtrip mit zwei Wechselrichtern',()=>{e("inverters.push({id:'test-wr',model:'Test WR',vmax:1000,pmax:'',limits:[limitDefault()]});strings.push({...moduleDefault(),wr:1,mppt:1,count:7,status:'geplant'});renderStrings();calc()");const xml=e('serialize()');e('loadXml('+JSON.stringify(xml)+')');return e("inverters.length===2&&strings.some(s=>s.wr===1&&s.count===7&&s.status==='geplant')")});
 check('XML-Import ersetzt Projekt nicht bei Fehler',()=>{const before=e('serialize()');try{e("loadXml('<solarProject><broken></solarProject>')")}catch(_){}return before===e('serialize()')});
@@ -70,6 +70,12 @@ check('2.0.1 Mobile Darstellung gruppiert nach Wechselrichter und MPPT',()=>{e("
 check('2.0.1 SVG bleibt für Desktop und Druck erhalten',()=>{e("buildPrintReport()");return Boolean(w.document.querySelector('#plantDiagram .diagram-desktop svg'))&&Boolean(w.document.querySelector('#printReportContent .diagram-desktop svg'))});
 check('2.0.1 Mobil keine breite SVG im sichtbaren Anschlussplan',()=>{return w.matchMedia('(max-width:600px)').matches?w.getComputedStyle(w.document.querySelector('#plantDiagram .diagram-desktop')).display==='none'&&w.getComputedStyle(w.document.querySelector('#diagram .mobile-diagram')).display!=='none':true});
 check('2.0.1 Testzustand wiederherstellen',()=>{e('loadXml('+JSON.stringify(original)+')');return e('inverters.length===1')});
+check('2.1 AC-Speicher erfassen und Kapazität berechnen',()=>{e("batteries=[{...batteryDefault(),coupling:'ac',existing:2,planned:2,moduleKwh:2.5}];renderBatteries();calc()");return e('batteryCapacity(batteries[0])===10')&&w.document.getElementById('batteryOverview').textContent.includes('10')});
+check('2.1 DC-Spannungsbereich außerhalb WR-Bereich warnen',()=>{e("batteries=[{...batteryDefault(),vmin:100,vmax:600,wrVmin:150,wrVmax:500,wrCharge:5,wrDischarge:5}];renderBatteries();calc()");return e("batteryIssues(batteries[0]).some(x=>x.includes('außerhalb'))")});
+check('2.1 Speichererweiterung bleibt im XML erhalten',()=>{e("batteries=[{...batteryDefault(),coupling:'ac',existing:3,planned:4}];renderBatteries()");const xml=e('serialize()');e('loadXml('+JSON.stringify('')+'+xml)');return e('batteries.length===1&&batteries[0].existing===3&&batteries[0].planned===4')});
+check('2.1 Fehlerhafter Batterieimport bewahrt Projekt',()=>{const before=e('serialize()'),bad=before.replace(/<moduleKwh>[^<]*<\/moduleKwh>/,'<moduleKwh>-1</moduleKwh>');try{e('loadXml('+JSON.stringify('')+'+bad)')}catch(_){}return e('serialize()')===before});
+check('2.1 Speicher im Projektbericht',()=>{e('buildPrintReport()');return w.document.getElementById('printReportContent').textContent.includes('Batteriespeicher')});
+check('2.1 Projektzustand wiederherstellen',()=>{e('loadXml('+JSON.stringify(original)+')');return e('batteries.length===0')});
 const failures=results.querySelectorAll('.fail').length;document.documentElement.dataset.testFailures=String(failures);const p=document.createElement('p');p.textContent=failures?'Fehlgeschlagen: '+failures:'Alle Browser-Selbsttests erfolgreich';p.className=failures?'fail':'ok';results.append(p)}
 document.getElementById('run').onclick=run;frame.onload=run;
 </script></html>
