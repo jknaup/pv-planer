@@ -65,6 +65,11 @@ check('2.0 Druckbericht auch bei mehreren Wechselrichtern',()=>{
  return t.includes('Nord')&&t.includes('Süd')&&Boolean(w.document.querySelector('#printReportContent svg'));
 });
 check('2.0 Ursprungszustand wiederherstellen',()=>{e('loadXml('+JSON.stringify(original)+')');return e('inverters.length===1')});
+check('2.0.1 Beide Anschlusspläne haben mobile Darstellung',()=>{e("calc()");return Boolean(w.document.querySelector('#diagram .mobile-diagram .mobile-diagram-mppt'))&&Boolean(w.document.querySelector('#plantDiagram .mobile-diagram .mobile-diagram-mppt'))});
+check('2.0.1 Mobile Darstellung gruppiert nach Wechselrichter und MPPT',()=>{e("inverters.push({id:'mobil',model:'Test mobil',vmax:1000,pmax:'',limits:[limitDefault()]});strings=[{...moduleDefault(),wr:0,mppt:1},{...moduleDefault(),wr:1,mppt:1,status:'geplant'}];calc()");return w.document.querySelectorAll('#plantDiagram .mobile-diagram-wr').length===2&&w.document.querySelectorAll('#plantDiagram .mobile-diagram-string').length===2});
+check('2.0.1 SVG bleibt für Desktop und Druck erhalten',()=>{e("buildPrintReport()");return Boolean(w.document.querySelector('#plantDiagram .diagram-desktop svg'))&&Boolean(w.document.querySelector('#printReportContent .diagram-desktop svg'))});
+check('2.0.1 Mobil keine breite SVG im sichtbaren Anschlussplan',()=>{return w.matchMedia('(max-width:600px)').matches?w.getComputedStyle(w.document.querySelector('#plantDiagram .diagram-desktop')).display==='none'&&w.getComputedStyle(w.document.querySelector('#diagram .mobile-diagram')).display!=='none':true});
+check('2.0.1 Testzustand wiederherstellen',()=>{e('loadXml('+JSON.stringify(original)+')');return e('inverters.length===1')});
 const failures=results.querySelectorAll('.fail').length;document.documentElement.dataset.testFailures=String(failures);const p=document.createElement('p');p.textContent=failures?'Fehlgeschlagen: '+failures:'Alle Browser-Selbsttests erfolgreich';p.className=failures?'fail':'ok';results.append(p)}
 document.getElementById('run').onclick=run;frame.onload=run;
 </script></html>
