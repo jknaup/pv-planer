@@ -29,6 +29,10 @@ check('1.7 Änderungen aktualisieren die MPPT-Auslastung sofort',()=>{const x=w.
 check('1.7 String-Warnungen direkt am String',()=>{const x=w.document.querySelector('#strings [data-k="count"]');x.value='35';x.dispatchEvent(new w.Event('input',{bubbles:true}));return w.document.querySelector('#si0').textContent.includes('Voc bei Kälte')});
 check('1.8 Alternativen belegen keinen MPPT',()=>{e("strings=[{...moduleDefault(),status:'alternative'}];calc()");return w.document.getElementById('plantOverview').textContent.includes('MPPT 1 · frei')});
 check('1.8 Testzustand wiederherstellen',()=>{e('loadXml('+JSON.stringify(original)+')');return e('inverters.length===1')});
+check('1.9 Druckbericht enthält Projekt, Wechselrichter und Strings',()=>{e("buildPrintReport()");const t=w.document.getElementById('printReportContent').textContent;return t.includes('PV-Anlagenbericht')&&t.includes('Stringbelegung')&&t.includes('Prüfhinweise')&&t.includes('MPPT')});
+check('1.9 Bericht verwendet aktuelle Daten',()=>{e("strings=[{...moduleDefault(),count:17,wr:0,mppt:1,status:'bestand'}];calc();buildPrintReport()");return w.document.getElementById('printReportContent').textContent.includes('17 ×')});
+check('1.9 Druckansicht enthält Anlagenplan',()=>{e("buildPrintReport()");return Boolean(w.document.querySelector('#printReportContent .report-diagram svg'))});
+check('1.9 Testzustand wiederherstellen',()=>{e('loadXml('+JSON.stringify(original)+')');return e('inverters.length===1')});
 const failures=results.querySelectorAll('.fail').length;document.documentElement.dataset.testFailures=String(failures);const p=document.createElement('p');p.textContent=failures?'Fehlgeschlagen: '+failures:'Alle Browser-Selbsttests erfolgreich';p.className=failures?'fail':'ok';results.append(p)}
 document.getElementById('run').onclick=run;frame.onload=run;
 </script></html>
