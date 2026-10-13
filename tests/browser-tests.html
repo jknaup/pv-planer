@@ -17,6 +17,9 @@ check('1.4 Warnungen in Grafik und Tabelle',()=>{e("strings=[{...moduleDefault()
 check('1.4 Alternative löst keine aktive Spannungswarnung aus',()=>{e("strings[0].status='alternative';calc()");return !w.document.getElementById('plantWarnings').textContent.includes('Voc bei Kälte')});
 check('1.4 Mobilkarten bei schmalem Bildschirm sichtbar',()=>{return w.matchMedia('(max-width:600px)').matches?w.getComputedStyle(w.document.querySelector('.plant-cards')).display!=='none':true});
 check('1.4 Ursprungszustand wiederherstellen',()=>{e('loadXml('+JSON.stringify(original)+')');return e('inverters.length===1')});
+check('1.5 Einheitliche Prüfungen und Einstufung',()=>{e("strings=[{...moduleDefault(),count:30,status:'bestand'}];calc()");const wng=e('electricalWarnings()');return wng.perString[0].some(x=>x.level==='critical'&&x.text.includes('Voc bei Kälte'))&&w.document.getElementById('plantWarnings').textContent.includes('critical')&&w.document.getElementById('results').textContent.includes('MPPT')});
+check('1.5 Alternative bleibt aus aktiver Prüfung',()=>{e("strings[0].status='alternative';calc()");return e('electricalWarnings().perString[0].length===0')});
+check('1.5 Testzustand wiederherstellen',()=>{e('loadXml('+JSON.stringify(original)+')');return e('inverters.length===1')});
 const failures=results.querySelectorAll('.fail').length;document.documentElement.dataset.testFailures=String(failures);const p=document.createElement('p');p.textContent=failures?'Fehlgeschlagen: '+failures:'Alle Browser-Selbsttests erfolgreich';p.className=failures?'fail':'ok';results.append(p)}
 document.getElementById('run').onclick=run;frame.onload=run;
 </script></html>
