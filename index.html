@@ -1,4 +1,4 @@
-<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PV Stringplaner 1.4-dev</title><style>
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PV Stringplaner 1.5-dev</title><style>
 :root{font-family:system-ui,Arial;color:#172b3a;background:#f3f6f9}*{box-sizing:border-box}body{margin:0}header{background:#12354b;color:white;padding:22px max(20px,calc((100vw - 1150px)/2))}h1{margin:0;font-size:25px}header p{margin:5px 0 0;color:#c8d9e4}main{max-width:1150px;margin:22px auto;padding:0 16px}.panel{background:white;border:1px solid #dce4eb;border-radius:12px;padding:20px;margin-bottom:18px;box-shadow:0 2px 9px #17344a09}h2{font-size:19px;margin:0 0 16px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px}.field{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:650}input,select{width:100%;border:1px solid #bccbd6;border-radius:7px;padding:10px;font:inherit;background:white;color:#172b3a}button{border:0;background:#126a89;color:white;padding:10px 15px;border-radius:7px;cursor:pointer;font-weight:650}button:hover{filter:brightness(.92)}button.secondary{background:#e7eef3;color:#17384b}button.danger{background:#b33d42}.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.string{border:1px solid #dce5ec;border-radius:10px;padding:16px;margin-top:12px}.stringtop{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:12px}.stringtop h3{margin:0;font-size:16px}.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:14px}.metric{background:#f1f6f9;border-radius:8px;padding:12px}.metric strong{display:block;font-size:21px;margin-top:4px}.metric span{font-size:12px;color:#506879}.msg{padding:10px 12px;border-radius:7px;margin-top:8px;font-size:14px}.ok{background:#e6f5ed;color:#155b39}.warn{background:#fff3d8;color:#80520c}.bad{background:#fbe7e8;color:#902c34}.muted{color:#627586;font-size:13px}.small{font-size:12px}.footer{padding:15px 0 35px}.hidden{display:none}input[type=file]{display:none}@media(max-width:600px){.panel{padding:15px}header{padding:20px}button{padding:10px}.stringtop{align-items:flex-start;flex-wrap:wrap}.stringtop h2{margin:0}.toolbar button{flex:1 1 140px}.grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr))}.metric strong{font-size:18px}}
 .plant-table{width:100%;border-collapse:collapse;min-width:830px;text-align:left}.plant-table th,.plant-table td{padding:9px 10px;border-bottom:1px solid #dce5ec;vertical-align:middle}.plant-table th{font-size:12px;color:#4c6475;background:#eef4f8}.plant-table tr[data-problem="true"]{background:#fff7f5}.plant-status{font-size:12px;font-weight:700;color:#14623f}.plant-status.problem{color:#a12c25}.plant-cards{display:none}.plant-card{border:1px solid #dce5ec;border-radius:10px;padding:13px;margin:10px 0;background:#fff}.plant-card.problem{border-color:#e5a6a1;background:#fff9f8}.plant-card-head{display:flex;justify-content:space-between;align-items:center;gap:8px}.plant-card-head strong{overflow-wrap:anywhere}.plant-card dl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 0}.plant-card dt{font-size:11px;color:#627586}.plant-card dd{margin:2px 0 0;font-weight:650}.plant-card .plant-status{margin-top:10px;display:block}#plantDiagram{scrollbar-width:thin}@media(max-width:600px){.plant-table-wrap{display:none}.plant-cards{display:block}#plantDiagram svg{min-width:620px!important}#plantWarnings details{font-size:14px}}
 </style></head><body><header><h1>☀ PV Stringplaner</h1><p>Wechselrichter, MPPTs und Modulstrings berechnen · lokal & offline</p></header><main>
@@ -14,30 +14,31 @@ function renderLimits(){ $('mpptFields').innerHTML=limits.map((l,i)=>`<div class
 function renderStrings(){ $('strings').innerHTML=strings.map((s,i)=>`<div class="string" style="${number(s.wr)!==activeInverter?'display:none':''}"><div class="stringtop"><h3>String ${i+1}</h3><button class="danger" data-delete="${i}">Entfernen</button></div><div class="grid">${[['name','Modulbezeichnung','text'],['count','Module in Serie','number'],['p','Modulleistung Pmpp (W)','number'],['voc','Leerlaufspannung Voc (V)','number'],['vmp','MPP-Spannung Vmpp (V)','number'],['isc','Kurzschlussstrom Isc (A)','number'],['imp','MPP-Strom Impp (A)','number'],['bvoc','Voc-Temperaturkoeff. (%/°C)','number'],['bvmp','Vmpp-Temperaturkoeff. (%/°C)','number'],['bisc','Isc-Temperaturkoeff. (%/°C)','number']].map(([k,label,type])=>`<label class="field">${label}<input type="${type}" ${type==='number'?'step="any"':''} data-s="${i}" data-k="${k}" value="${esc(s[k])}"></label>`).join('')}<label class="field">Wechselrichter<select data-s="${i}" data-k="wr">${inverters.map((w,j)=>`<option value="${j}" ${number(s.wr)===j?'selected':''}>WR ${j+1}: ${esc(w.model)}</option>`).join('')}</select></label><label class="field">Status<select data-s="${i}" data-k="status"><option value="bestand" ${s.status==='bestand'?'selected':''}>Bestand</option><option value="geplant" ${s.status==='geplant'?'selected':''}>Erweiterung</option><option value="alternative" ${s.status==='alternative'?'selected':''}>Alternative</option></select></label><label class="field">MPPT-Zuordnung<select data-s="${i}" data-k="mppt">${limits.map((_,j)=>`<option value="${j+1}" ${number(s.mppt)===j+1?'selected':''}>MPPT ${j+1}</option>`).join('')}</select></label></div><div class="metrics" id="sm${i}"></div></div>`).join('')||'<p class="muted">Noch keine Strings angelegt.</p>';if($('targetString'))renderCatalog()}
 function metric(name,value){return `<div class="metric"><span>${name}</span><strong>${value}</strong></div>`}function msg(type,text){return `<div class="msg ${type}">${esc(text)}</div>`}
 function electricalWarnings(){
- const tmin=number($('tmin').value,-10),tmax=number($('tmax').value,70),perString=strings.map(()=>[]),perMppt=inverters.map(w=>w.limits.map(()=>[]));
+ const tmin=number($('tmin').value,-10),tmax=number($('tmax').value,70),perString=strings.map(()=>[]),perMppt=inverters.map(w=>w.limits.map(()=>[])),perInverter=inverters.map(()=>[]);
  const groups=inverters.map(w=>w.limits.map(()=>[]));
  strings.forEach((s,i)=>{
   if(s.status==='alternative')return;
   const wr=number(s.wr),mi=number(s.mppt)-1,n=number(s.count),voc=number(s.voc),vmp=number(s.vmp),isc=number(s.isc),imp=number(s.imp);
   const cold=n*voc*(1+number(s.bvoc)/100*(tmin-25)),hot=n*vmp*(1+number(s.bvmp)/100*(tmax-25)),coldMpp=n*vmp*(1+number(s.bvmp)/100*(tmin-25));
   const short=Math.max(isc*(1+number(s.bisc)/100*(tmin-25)),isc*(1+number(s.bisc)/100*(tmax-25)));
-  if(!Number.isInteger(n)||n<1||[voc,vmp,isc,imp].some(v=>!Number.isFinite(v)||v<=0)||voc<vmp||isc<imp||![cold,hot,coldMpp,short].every(v=>Number.isFinite(v)&&v>0))perString[i].push('Modul- oder Temperaturwerte unplausibel');
-  if(!inverters[wr]||!groups[wr]?.[mi]){perString[i].push('MPPT-Zuordnung ungültig');return}
-  if(cold>number(inverters[wr].vmax))perString[i].push('Voc bei Kälte über DC-Maximum');
+  if(!Number.isInteger(n)||n<1||[voc,vmp,isc,imp].some(v=>!Number.isFinite(v)||v<=0)||voc<vmp||isc<imp||![cold,hot,coldMpp,short].every(v=>Number.isFinite(v)&&v>0))perString[i].push({level:'critical',text:'Modul- oder Temperaturwerte unplausibel'});
+  if(!inverters[wr]||!groups[wr]?.[mi]){perString[i].push({level:'critical',text:'MPPT-Zuordnung ungültig'});return}
+  if(cold>number(inverters[wr].vmax))perString[i].push({level:'critical',text:'Voc bei Kälte über DC-Maximum'});
   const l=inverters[wr].limits[mi];
-  if(hot<number(l.vmin)||coldMpp>number(l.vmax)||n*vmp<number(l.vmin)||n*vmp>number(l.vmax))perString[i].push('MPP-Spannung außerhalb MPPT-Bereich');
+  if(hot<number(l.vmin)||coldMpp>number(l.vmax)||n*vmp<number(l.vmin)||n*vmp>number(l.vmax))perString[i].push({level:'warning',text:'MPP-Spannung außerhalb MPPT-Bereich'});
   groups[wr][mi].push({i,imp,short,stc:n*vmp,hot,coldMpp});
  });
  groups.forEach((mppts,wi)=>mppts.forEach((g,mi)=>{
   if(!g.length)return;const l=inverters[wi].limits[mi],sumImp=g.reduce((a,x)=>a+x.imp,0),sumIsc=g.reduce((a,x)=>a+x.short,0);
-  if(sumImp>number(l.imax))perMppt[wi][mi].push('Σ Impp über Eingangsstromgrenze');
-  if(sumIsc>number(l.iscmax))perMppt[wi][mi].push('Σ Isc über Kurzschlussstromgrenze');
-  if(g.length>1){const spread=k=>Math.max(...g.map(x=>x[k]))-Math.min(...g.map(x=>x[k]))>Math.min(...g.map(x=>x[k]))*.03;if(['stc','hot','coldMpp'].some(spread))perMppt[wi][mi].push('Parallele Strings mit abweichender MPP-Spannung')}
+  if(sumImp>number(l.imax))perMppt[wi][mi].push({level:'critical',text:'Σ Impp über Eingangsstromgrenze'});
+  if(sumIsc>number(l.iscmax))perMppt[wi][mi].push({level:'critical',text:'Σ Isc über Kurzschlussstromgrenze'});
+  if(g.length>1){const spread=k=>Math.max(...g.map(x=>x[k]))-Math.min(...g.map(x=>x[k]))>Math.min(...g.map(x=>x[k]))*.03;if(['stc','hot','coldMpp'].some(spread))perMppt[wi][mi].push({level:'warning',text:'Parallele Strings mit abweichender MPP-Spannung'})}
  }));
- return {perString,perMppt};
+ inverters.forEach((w,wi)=>{const power=strings.filter(st=>number(st.wr)===wi&&st.status!=='alternative').reduce((sum,st)=>sum+number(st.count)*number(st.p),0);if(number(w.pmax)>0&&power>number(w.pmax))perInverter[wi].push({level:'info',text:'DC-Leistung über optional eingetragener Grenze (Überbelegung gesondert bewerten)'})});
+ return {perString,perMppt,perInverter};
 }
-function renderPlantDiagram(){
- const warnings=electricalWarnings(),colW=310,gap=22,pad=16,head=78,lineH=62;
+function renderPlantDiagram(warnings=electricalWarnings()){
+ const colW=310,gap=22,pad=16,head=78,lineH=62;
  const width=pad*2+Math.max(1,inverters.length)*colW+Math.max(0,inverters.length-1)*gap;
  const maxRows=Math.max(1,...inverters.map((w,wi)=>Math.max(w.limits.length,strings.filter(st=>number(st.wr)===wi).length)));
  const height=head+maxRows*lineH+40;
@@ -45,12 +46,12 @@ function renderPlantDiagram(){
  inverters.forEach((w,wi)=>{
   const x=pad+wi*(colW+gap),assigned=strings.map((st,si)=>({...st,si})).filter(st=>number(st.wr)===wi);
   const total=assigned.filter(st=>st.status!=='alternative').reduce((a,st)=>a+number(st.count)*number(st.p),0);
-  const wrWarning=warnings.perString.some((arr,i)=>number(strings[i].wr)===wi&&arr.length)||warnings.perMppt[wi].some(arr=>arr.length);
+  const wrWarning=warnings.perString.some((arr,i)=>number(strings[i].wr)===wi&&arr.length)||warnings.perMppt[wi].some(arr=>arr.length)||warnings.perInverter[wi].length;
   svg+='<rect x="'+x+'" y="8" width="'+colW+'" height="'+(height-22)+'" rx="12" fill="#f1f6fa" stroke="'+(wi===activeInverter?'#126a89':'#b8cad8')+'" stroke-width="'+(wi===activeInverter?3:1)+'"/>';
   svg+='<g data-overview-wr="'+wi+'" role="button" tabindex="0" aria-label="Wechselrichter '+(wi+1)+' bearbeiten" style="cursor:pointer"><rect x="'+(x+8)+'" y="17" width="'+(colW-16)+'" height="51" rx="8" fill="#dcecf5"/><text x="'+(x+16)+'" y="37" font-size="14" font-weight="700" fill="#12354b">WR '+(wi+1)+': '+esc(w.model.length>23?w.model.slice(0,22)+'…':w.model)+'</text><text x="'+(x+16)+'" y="56" font-size="12" fill="#34566a">'+fmt(total/1000,2)+' kWp · '+w.limits.length+' MPPT'+(wrWarning?' · ⚠ Warnung':'')+'</text></g>';
   w.limits.forEach((l,mi)=>{
    const y=head+mi*lineH,errors=warnings.perMppt[wi][mi],bad=errors.length>0;
-   svg+='<g><title>'+esc('MPPT '+(mi+1)+(bad?': '+errors.join('; '):''))+'</title><rect x="'+(x+colW-100)+'" y="'+y+'" width="88" height="36" rx="6" fill="'+(bad?'#fff0ee':'white')+'" stroke="'+(bad?'#b42318':'#7393a9')+'" stroke-width="'+(bad?2:1)+'"/><text x="'+(x+colW-91)+'" y="'+(y+15)+'" font-size="12" font-weight="700" fill="'+(bad?'#b42318':'#173b51')+'">MPPT '+(mi+1)+(bad?' !':'')+'</text><text x="'+(x+colW-91)+'" y="'+(y+28)+'" font-size="10" fill="#527087">'+fmt(l.imax)+' A max.</text></g>';
+   svg+='<g><title>'+esc('MPPT '+(mi+1)+(bad?': '+errors.map(e=>e.text).join('; '):''))+'</title><rect x="'+(x+colW-100)+'" y="'+y+'" width="88" height="36" rx="6" fill="'+(bad?'#fff0ee':'white')+'" stroke="'+(bad?'#b42318':'#7393a9')+'" stroke-width="'+(bad?2:1)+'"/><text x="'+(x+colW-91)+'" y="'+(y+15)+'" font-size="12" font-weight="700" fill="'+(bad?'#b42318':'#173b51')+'">MPPT '+(mi+1)+(bad?' !':'')+'</text><text x="'+(x+colW-91)+'" y="'+(y+28)+'" font-size="10" fill="#527087">'+fmt(l.imax)+' A max.</text></g>';
   });
   assigned.forEach((st,idx)=>{
    const y=head+idx*lineH,mi=number(st.mppt)-1,valid=mi>=0&&mi<w.limits.length,errors=warnings.perString[st.si],bad=errors.length>0;
@@ -65,13 +66,13 @@ function renderPlantDiagram(){
   if(!assigned.length)svg+='<text x="'+(x+20)+'" y="'+(head+20)+'" font-size="12" fill="#527087">Keine Strings zugeordnet</text>';
  });
  svg+='</svg>';$('plantDiagram').innerHTML=svg;
- const list=[];warnings.perString.forEach((items,i)=>items.forEach(t=>list.push('String '+(i+1)+': '+t)));warnings.perMppt.forEach((mppts,wi)=>mppts.forEach((items,mi)=>items.forEach(t=>list.push('WR '+(wi+1)+' / MPPT '+(mi+1)+': '+t))));
+ const list=[];warnings.perString.forEach((items,i)=>items.forEach(t=>list.push('String '+(i+1)+' · '+t.level+': '+t.text)));warnings.perMppt.forEach((mppts,wi)=>mppts.forEach((items,mi)=>items.forEach(t=>list.push('WR '+(wi+1)+' / MPPT '+(mi+1)+' · '+t.level+': '+t.text))));
+ warnings.perInverter.forEach((items,wi)=>items.forEach(t=>list.push('WR '+(wi+1)+' · '+t.level+': '+t.text)));
  $('plantWarnings').innerHTML=list.length?'<details><summary>'+list.length+' elektrische Hinweise im Anlagenplan</summary><ul>'+list.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul></details>':'<p class="muted small">Keine Grenzwertverletzungen in den geprüften Kennzahlen.</p>';
 }
 $('plantDiagram').onclick=e=>{const node=e.target.closest('[data-overview-wr]');if(node)activateInverter(number(node.dataset.overviewWr))};
 $('plantDiagram').onkeydown=e=>{if(e.key!=='Enter'&&e.key!==' ')return;const node=e.target.closest('[data-overview-wr]');if(node){e.preventDefault();activateInverter(number(node.dataset.overviewWr))}};
-function renderPlantOverview(){
- const warnings=electricalWarnings();
+function renderPlantOverview(warnings=electricalWarnings()){
  const records=inverters.map((w,wi)=>{
   const assigned=strings.filter(x=>number(x.wr)===wi),live=assigned.filter(x=>x.status!=='alternative');
   const bestand=live.filter(x=>x.status==='bestand').reduce((a,x)=>a+number(x.count)*number(x.p),0);
@@ -79,7 +80,7 @@ function renderPlantOverview(){
   const alternative=assigned.filter(x=>x.status==='alternative').reduce((a,x)=>a+number(x.count)*number(x.p),0);
   const belegte=new Set(live.map(x=>number(x.mppt))).size;
   const dcLimit=number(w.pmax),total=bestand+erweiterung,ratio=dcLimit>0?total/dcLimit*100:null;
-  const problems=warnings.perString.reduce((a,items,i)=>a+(number(strings[i].wr)===wi?items.length:0),0)+warnings.perMppt[wi].reduce((a,items)=>a+items.length,0);
+  const problems=warnings.perString.reduce((a,items,i)=>a+(number(strings[i].wr)===wi?items.length:0),0)+warnings.perMppt[wi].reduce((a,items)=>a+items.length,0)+warnings.perInverter[wi].length;
   return {wi,model:w.model,strings:live.length,belegte,mppts:w.limits.length,bestand,erweiterung,alternative,total,ratio,problems};
  });
  const status=r=>'<span class="plant-status'+(r.problems?' problem':'')+'">'+(r.problems?'⚠ '+r.problems+' Hinweis'+(r.problems===1?'':'e'):'✓ Ohne Auffälligkeit')+'</span>';
@@ -90,50 +91,33 @@ function renderPlantOverview(){
 $('plantOverview').onclick=e=>{const b=e.target.closest('[data-overview-wr]');if(b)activateInverter(number(b.dataset.overviewWr))};
 function calc(){
  if(inverters[activeInverter]){const w=inverters[activeInverter];w.model=$('model').value;w.vmax=number($('vmax').value);w.pmax=$('pmax').value;renderInverterTabs()}
- const tmin=number($('tmin').value,-10),tmax=number($('tmax').value,70);
- let issues=0,html='',activePower=0;const totals={bestand:0,geplant:0,alternative:0};
- const allGroups=inverters.map(w=>w.limits.map(()=>[]));
- strings.forEach((s,i)=>{
-  const n=number(s.count),p=number(s.p),voc=number(s.voc),vmp=number(s.vmp),isc=number(s.isc),imp=number(s.imp),wr=number(s.wr),mppt=number(s.mppt)-1;
-  const cold=n*voc*(1+number(s.bvoc)/100*(tmin-25)),hot=n*vmp*(1+number(s.bvmp)/100*(tmax-25)),coldMpp=n*vmp*(1+number(s.bvmp)/100*(tmin-25));
-  const iscCold=isc*(1+number(s.bisc)/100*(tmin-25)),iscHot=isc*(1+number(s.bisc)/100*(tmax-25)),short=Math.max(iscCold,iscHot),power=n*p;
-  const status=['bestand','geplant','alternative'].includes(s.status)?s.status:'bestand';
-  totals[status]+=power;
-  if(wr===activeInverter&&status!=='alternative')activePower+=power;
-  const warnings=[];
-  if(!Number.isInteger(n)||n<=0||[p,voc,vmp,isc,imp].some(v=>!Number.isFinite(v)||v<=0)||voc<vmp||isc<imp)warnings.push('Moduldaten unplausibel oder unvollständig.');
-  if(!Number.isFinite(cold)||cold<=0||hot<=0||coldMpp<=0||short<=0)warnings.push('Temperaturberechnung unplausibel.');
-  if(status!=='alternative'&&(!allGroups[wr]||!allGroups[wr][mppt]))warnings.push('Wechselrichter- oder MPPT-Zuordnung ungültig.');
-  else if(allGroups[wr]&&allGroups[wr][mppt]) {
-   const w=inverters[wr];
-   if(status!=='alternative'&&cold>number(w.vmax))warnings.push('Voc bei Kälte '+fmt(cold)+' V überschreitet DC-Maximum '+fmt(number(w.vmax))+' V.');
-   if(status!=='alternative')allGroups[wr][mppt].push({i,cold,hot,coldMpp,stc:n*vmp,imp,short,power});
-  }
-  issues+=warnings.length;
-  const element=$('sm'+i);
-  if(element)element.innerHTML=metric('Stringleistung',fmt(power/1000,2)+' kWp')+metric('Voc bei Kälte',fmt(cold)+' V')+metric('Vmpp bei Hitze',fmt(hot)+' V')+metric('Vmpp bei Kälte',fmt(coldMpp)+' V')+warnings.map(x=>msg('bad',x)).join('');
+ const warnings=electricalWarnings(),totals={bestand:0,geplant:0,alternative:0};
+ let activePower=0,html='';
+ const formatIssue=issue=>msg(issue.level==='critical'?'bad':issue.level==='warning'?'warn':'ok',issue.text);
+ strings.forEach((st,i)=>{
+  const n=number(st.count),power=n*number(st.p),tmin=number($('tmin').value,-10),tmax=number($('tmax').value,70);
+  const cold=n*number(st.voc)*(1+number(st.bvoc)/100*(tmin-25)),hot=n*number(st.vmp)*(1+number(st.bvmp)/100*(tmax-25)),coldMpp=n*number(st.vmp)*(1+number(st.bvmp)/100*(tmin-25));
+  totals[st.status]=(totals[st.status]||0)+power;
+  if(number(st.wr)===activeInverter&&st.status!=='alternative')activePower+=power;
+  const el=$('sm'+i);
+  if(el)el.innerHTML=metric('Stringleistung',fmt(power/1000,2)+' kWp')+metric('Voc bei Kälte',fmt(cold)+' V')+metric('Vmpp bei Hitze',fmt(hot)+' V')+metric('Vmpp bei Kälte',fmt(coldMpp)+' V')+warnings.perString[i].map(formatIssue).join('');
  });
- allGroups.forEach((groups,wi)=>{
-  const w=inverters[wi],wrPower=strings.filter(s=>number(s.wr)===wi&&s.status!=='alternative').reduce((a,s)=>a+number(s.count)*number(s.p),0);
+ inverters.forEach((w,wi)=>{
   html+='<h3>'+esc(w.model||'Wechselrichter '+(wi+1))+' · WR '+(wi+1)+'</h3>';
-  groups.forEach((g,mi)=>{
-   const l=w.limits[mi];if(!g.length){html+=msg('warn','WR '+(wi+1)+' / MPPT '+(mi+1)+': nicht belegt.');return}
-   const sumImp=g.reduce((a,x)=>a+x.imp,0),sumIsc=g.reduce((a,x)=>a+x.short,0),warnings=[];
-   for(const x of g){
-    if(x.hot<number(l.vmin))warnings.push('String '+(x.i+1)+': Vmpp bei Hitze '+fmt(x.hot)+' V unter MPP-Minimum '+fmt(l.vmin)+' V.');
-    if(x.coldMpp>number(l.vmax))warnings.push('String '+(x.i+1)+': Vmpp bei Kälte '+fmt(x.coldMpp)+' V über MPP-Maximum '+fmt(l.vmax)+' V.');
-    if(x.stc<number(l.vmin)||x.stc>number(l.vmax))warnings.push('String '+(x.i+1)+': Vmpp bei STC außerhalb MPP-Bereich.');
-   }
-   if(sumImp>number(l.imax))warnings.push('Summe Impp '+fmt(sumImp,2)+' A über Eingangsstromgrenze '+fmt(l.imax)+' A.');
-   if(sumIsc>number(l.iscmax))warnings.push('Summe Isc im Temperaturbereich '+fmt(sumIsc,2)+' A über Kurzschlussstromgrenze '+fmt(l.iscmax)+' A.');
-   if(g.length>1){const stc=g.map(x=>x.stc),hot=g.map(x=>x.hot),cold=g.map(x=>x.coldMpp);if(Math.max(...stc)-Math.min(...stc)>Math.min(...stc)*.03||Math.max(...hot)-Math.min(...hot)>Math.min(...hot)*.03||Math.max(...cold)-Math.min(...cold)>Math.min(...cold)*.03)warnings.push('Parallelstrings mit abweichenden MPP-Spannungen (STC oder Temperaturbereich): Zulässigkeit prüfen.');}
-   issues+=warnings.length;
-   html+='<div class="string"><strong>WR '+(wi+1)+' / MPPT '+(mi+1)+' · '+g.length+' String(s)</strong><div class="metrics">'+metric('Leistung',fmt(g.reduce((a,x)=>a+x.power,0)/1000,2)+' kWp')+metric('Σ Impp',fmt(sumImp,2)+' A')+metric('Σ Isc (max.)',fmt(sumIsc,2)+' A')+'</div>'+(warnings.length?warnings.map(x=>msg('bad',x)).join(''):msg('ok','Keine Grenzwertüberschreitungen in den geprüften Kennzahlen.'))+'</div>';
+  w.limits.forEach((l,mi)=>{
+   const assigned=strings.filter(st=>st.status!=='alternative'&&number(st.wr)===wi&&number(st.mppt)===mi+1);
+   if(!assigned.length){html+=msg('warn','WR '+(wi+1)+' / MPPT '+(mi+1)+': nicht belegt.');return}
+   const sumImp=assigned.reduce((sum,st)=>sum+number(st.imp),0);
+   const tmin=number($('tmin').value,-10),tmax=number($('tmax').value,70);
+   const sumIsc=assigned.reduce((sum,st)=>sum+Math.max(number(st.isc)*(1+number(st.bisc)/100*(tmin-25)),number(st.isc)*(1+number(st.bisc)/100*(tmax-25))),0);
+   const issues=warnings.perMppt[wi][mi];
+   html+='<div class="string"><strong>WR '+(wi+1)+' / MPPT '+(mi+1)+' · '+assigned.length+' String(s)</strong><div class="metrics">'+metric('Leistung',fmt(assigned.reduce((sum,st)=>sum+number(st.count)*number(st.p),0)/1000,2)+' kWp')+metric('Σ Impp',fmt(sumImp,2)+' A')+metric('Σ Isc (max.)',fmt(sumIsc,2)+' A')+'</div>'+(issues.length?issues.map(formatIssue).join(''):msg('ok','Keine Grenzwertüberschreitungen in den geprüften Kennzahlen.'))+'</div>';
   });
-  if(number(w.pmax)>0&&wrPower>number(w.pmax)){issues++;html+=msg('warn','WR '+(wi+1)+': DC-Leistung '+fmt(wrPower)+' W über eingetragener Grenze '+fmt(number(w.pmax))+' W.')}
+  html+=warnings.perInverter[wi].map(formatIssue).join('');
  });
+ const issues=warnings.perString.reduce((sum,x)=>sum+x.length,0)+warnings.perMppt.flat().reduce((sum,x)=>sum+x.length,0)+warnings.perInverter.reduce((sum,x)=>sum+x.length,0);
  $('summary').innerHTML='<div class="metrics">'+metric('Leistung aktiver WR',fmt(activePower/1000,2)+' kWp')+metric('Bestand gesamt',fmt(totals.bestand/1000,2)+' kWp')+metric('Erweiterung gesamt',fmt(totals.geplant/1000,2)+' kWp')+metric('Gesamtausbau',fmt((totals.bestand+totals.geplant)/1000,2)+' kWp')+metric('Wechselrichter',inverters.length)+metric('Auffälligkeiten gesamt',issues)+'</div>';
- $('results').innerHTML=html;renderPlantOverview();renderPlantDiagram();renderDiagram()
+ $('results').innerHTML=html;renderPlantOverview(warnings);renderPlantDiagram(warnings);renderDiagram()
 }
 function renderDiagram(){
  const rows=Math.max(strings.filter(s=>number(s.wr)===activeInverter).length,limits.length,1),height=Math.max(210,90+rows*86),width=940;
