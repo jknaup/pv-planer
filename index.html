@@ -27,10 +27,10 @@ function calc(){
   const warnings=[];
   if(!Number.isInteger(n)||n<=0||[p,voc,vmp,isc,imp].some(v=>!Number.isFinite(v)||v<=0)||voc<vmp||isc<imp)warnings.push('Moduldaten unplausibel oder unvollständig.');
   if(!Number.isFinite(cold)||cold<=0||hot<=0||coldMpp<=0||short<=0)warnings.push('Temperaturberechnung unplausibel.');
-  if(!allGroups[wr]||!allGroups[wr][mppt])warnings.push('Wechselrichter- oder MPPT-Zuordnung ungültig.');
-  else {
+  if(status!=='alternative'&&(!allGroups[wr]||!allGroups[wr][mppt]))warnings.push('Wechselrichter- oder MPPT-Zuordnung ungültig.');
+  else if(allGroups[wr]&&allGroups[wr][mppt]) {
    const w=inverters[wr];
-   if(cold>number(w.vmax))warnings.push('Voc bei Kälte '+fmt(cold)+' V überschreitet DC-Maximum '+fmt(number(w.vmax))+' V.');
+   if(status!=='alternative'&&cold>number(w.vmax))warnings.push('Voc bei Kälte '+fmt(cold)+' V überschreitet DC-Maximum '+fmt(number(w.vmax))+' V.');
    if(status!=='alternative')allGroups[wr][mppt].push({i,cold,hot,coldMpp,stc:n*vmp,imp,short,power});
   }
   issues+=warnings.length;
@@ -50,7 +50,7 @@ function calc(){
    }
    if(sumImp>number(l.imax))warnings.push('Summe Impp '+fmt(sumImp,2)+' A über Eingangsstromgrenze '+fmt(l.imax)+' A.');
    if(sumIsc>number(l.iscmax))warnings.push('Summe Isc im Temperaturbereich '+fmt(sumIsc,2)+' A über Kurzschlussstromgrenze '+fmt(l.iscmax)+' A.');
-   if(g.length>1&&Math.max(...g.map(x=>x.stc))-Math.min(...g.map(x=>x.stc))>Math.min(...g.map(x=>x.stc))*.03)warnings.push('Parallelstrings mit abweichenden MPP-Spannungen: Zulässigkeit prüfen.');
+   if(g.length>1){const stc=g.map(x=>x.stc),hot=g.map(x=>x.hot),cold=g.map(x=>x.coldMpp);if(Math.max(...stc)-Math.min(...stc)>Math.min(...stc)*.03||Math.max(...hot)-Math.min(...hot)>Math.min(...hot)*.03||Math.max(...cold)-Math.min(...cold)>Math.min(...cold)*.03)warnings.push('Parallelstrings mit abweichenden MPP-Spannungen (STC oder Temperaturbereich): Zulässigkeit prüfen.');}
    issues+=warnings.length;
    html+='<div class="string"><strong>WR '+(wi+1)+' / MPPT '+(mi+1)+' · '+g.length+' String(s)</strong><div class="metrics">'+metric('Leistung',fmt(g.reduce((a,x)=>a+x.power,0)/1000,2)+' kWp')+metric('Σ Impp',fmt(sumImp,2)+' A')+metric('Σ Isc (max.)',fmt(sumIsc,2)+' A')+'</div>'+(warnings.length?warnings.map(x=>msg('bad',x)).join(''):msg('ok','Keine Grenzwertüberschreitungen in den geprüften Kennzahlen.'))+'</div>';
   });
