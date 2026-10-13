@@ -96,8 +96,8 @@ function loadXml(xml){
  const nextStrings=[...root.querySelectorAll(':scope > strings > string')].map(n=>{const d=moduleDefault(),s={};for(const k of Object.keys(d)){const v=get(n,k);s[k]=['name','status'].includes(k)?v:(v===''&&['wr','mppt'].includes(k)?d[k]:number(v,NaN))}if(!s.status)s.status='bestand';return s});
  if(nextStrings.length>100)throw Error('Maximal 100 Strings.');
  if(nextStrings.some(s=>!['bestand','geplant','alternative'].includes(s.status)||!Number.isInteger(s.wr)||s.wr<0||s.wr>=nextInverters.length||!Number.isInteger(s.mppt)||s.mppt<1||s.mppt>nextInverters[s.wr].limits.length||!Number.isInteger(s.count)||s.count<1||['p','voc','vmp','isc','imp'].some(k=>!Number.isFinite(s[k])||s[k]<=0)||['bvoc','bvmp','bisc'].some(k=>!Number.isFinite(s[k]))))throw Error('Ungültige Stringdaten oder Zuordnung.');
- const nextProject=get(root,'project'),nextTmin=number(get(root,'tmin'),NaN),nextTmax=number(get(root,'tmax'),NaN);
- if(!Number.isFinite(nextTmin)||!Number.isFinite(nextTmax)||nextTmin>=nextTmax)throw Error('Ungültige Temperaturen.');
+ if(nextInverters.some(w=>w.pmax!==''&&(!Number.isFinite(number(w.pmax,NaN))||number(w.pmax)<0)))throw Error('Ungültige DC-Leistungsgrenze.');if(nextStrings.some(s=>s.voc<s.vmp||s.isc<s.imp))throw Error('Unplausible Modulkennwerte.');const nextProject=get(root,'project'),nextTmin=number(get(root,'tmin'),NaN),nextTmax=number(get(root,'tmax'),NaN);
+ if(!Number.isFinite(nextTmin)||!Number.isFinite(nextTmax)||nextTmin>=nextTmax||nextTmin< -80||nextTmax>150)throw Error('Ungültige Temperaturen.');
  // Commit the new project only after all data has passed validation.
  strings=nextStrings;inverters=nextInverters;activeInverter=0;limits=inverters[0].limits;
  $('project').value=nextProject;$('tmin').value=nextTmin;$('tmax').value=nextTmax;
