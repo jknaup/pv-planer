@@ -33,6 +33,38 @@ check('1.9 Druckbericht enthält Projekt, Wechselrichter und Strings',()=>{e("bu
 check('1.9 Bericht verwendet aktuelle Daten',()=>{e("strings=[{...moduleDefault(),count:17,wr:0,mppt:1,status:'bestand'}];calc();buildPrintReport()");return w.document.getElementById('printReportContent').textContent.includes('17 ×')});
 check('1.9 Druckansicht enthält Anlagenplan',()=>{e("buildPrintReport()");return Boolean(w.document.querySelector('#printReportContent .report-diagram svg'))});
 check('1.9 Testzustand wiederherstellen',()=>{e('loadXml('+JSON.stringify(original)+')');return e('inverters.length===1')});
+check('2.0 Zwei Wechselrichter mit getrennten MPPTs und Erweiterung',()=>{
+ e('loadXml('+JSON.stringify(original)+')');
+ e("inverters.push({id:'second',model:'WR Süd',vmax:1000,pmax:'',limits:[limitDefault(),limitDefault(),limitDefault()]});strings=[{...moduleDefault(),count:12,wr:0,mppt:1,status:'bestand'},{...moduleDefault(),count:8,wr:1,mppt:2,status:'geplant'},{...moduleDefault(),count:6,wr:1,mppt:3,status:'alternative'}];renderStrings();calc()");
+ const o=w.document.getElementById('plantOverview');
+ return e('inverters.length===2')&&o.querySelectorAll('.plant-card').length===2&&o.textContent.includes('MPPT 3 · frei')&&w.document.getElementById('summary').textContent.includes('2');
+});
+check('2.0 Parallele Strings überschreiten Eingangsstrom',()=>{
+ e("strings=[{...moduleDefault(),wr:0,mppt:1,status:'bestand'},{...moduleDefault(),wr:0,mppt:1,status:'geplant'}];calc()");
+ return e("electricalWarnings().perMppt[0][0].some(x=>x.level==='critical'&&x.text.includes('Impp'))")&&w.document.getElementById('plantOverview').textContent.includes('Kritisch');
+});
+check('2.0 MPP-Spannungsabweichung paralleler Strings',()=>{
+ e("strings=[{...moduleDefault(),count:10,wr:0,mppt:1},{...moduleDefault(),count:12,wr:0,mppt:1}];calc()");
+ return e("electricalWarnings().perMppt[0][0].some(x=>x.text.includes('abweichender MPP-Spannung'))");
+});
+check('2.0 Ungültiger XML-Import lässt Projekt unverändert',()=>{
+ const before=e('serialize()'),invalid=before.replace(/<count>[^<]*<\/count>/,'<count>0</count>');
+ try{e('loadXml('+JSON.stringify(invalid)+')')}catch(_){}
+ return before===e('serialize()');
+});
+check('2.0 XML-Roundtrip für komplexe Anlage',()=>{
+ e("inverters=[{id:'one',model:'Nord',vmax:1000,pmax:'',limits:[limitDefault()]},{id:'two',model:'Süd',vmax:1100,pmax:'',limits:[limitDefault(),limitDefault(),limitDefault()]}];activeInverter=0;limits=inverters[0].limits;document.getElementById('model').value='Nord';document.getElementById('vmax').value=1000;document.getElementById('pmax').value='';strings=[{...moduleDefault(),wr:0,mppt:1,status:'bestand'},{...moduleDefault(),wr:1,mppt:3,status:'geplant'}];calc()");
+ const xml=e('serialize()');e('loadXml('+JSON.stringify(xml)+')');
+ return e("inverters.length===2&&inverters[1].limits.length===3&&strings[1].wr===1&&strings[1].mppt===3");
+});
+check('2.0 Fehlende Grenzwerte nicht als freie Reserve ausweisen',()=>{
+ return e("reserveBar('Test',13,NaN).includes('Keine belastbare Reserve berechenbar')")&&e("Number.isNaN(mpptReserve([], {imax:'',iscmax:'',vmin:'',vmax:''},-10,70).imax)");
+});
+check('2.0 Druckbericht auch bei mehreren Wechselrichtern',()=>{
+ e("buildPrintReport()");const t=w.document.getElementById('printReportContent').textContent;
+ return t.includes('Nord')&&t.includes('Süd')&&Boolean(w.document.querySelector('#printReportContent svg'));
+});
+check('2.0 Ursprungszustand wiederherstellen',()=>{e('loadXml('+JSON.stringify(original)+')');return e('inverters.length===1')});
 const failures=results.querySelectorAll('.fail').length;document.documentElement.dataset.testFailures=String(failures);const p=document.createElement('p');p.textContent=failures?'Fehlgeschlagen: '+failures:'Alle Browser-Selbsttests erfolgreich';p.className=failures?'fail':'ok';results.append(p)}
 document.getElementById('run').onclick=run;frame.onload=run;
 </script></html>
