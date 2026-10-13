@@ -57,7 +57,7 @@ function renderPlantDiagram(warnings=electricalWarnings()){
    const y=head+idx*lineH,mi=number(st.mppt)-1,valid=mi>=0&&mi<w.limits.length,errors=warnings.perString[st.si],bad=errors.length>0;
    const color=bad?'#b42318':st.status==='alternative'?'#7c8793':st.status==='geplant'?'#2476bb':'#25865a';
    const dash=st.status==='alternative'?' stroke-dasharray="5 4"':'';
-   svg+='<g><title>'+esc('String '+(st.si+1)+(bad?': '+errors.join('; '):''))+'</title><rect x="'+(x+10)+'" y="'+y+'" width="155" height="43" rx="7" fill="'+(bad?'#fff0ee':'white')+'" stroke="'+color+'" stroke-width="2"'+dash+'/>';
+   svg+='<g><title>'+esc('String '+(st.si+1)+(bad?': '+errors.map(e=>e.text).join('; '):''))+'</title><rect x="'+(x+10)+'" y="'+y+'" width="155" height="43" rx="7" fill="'+(bad?'#fff0ee':'white')+'" stroke="'+color+'" stroke-width="2"'+dash+'/>';
    svg+='<text x="'+(x+17)+'" y="'+(y+16)+'" font-size="12" font-weight="700" fill="'+color+'">String '+(st.si+1)+(bad?' ⚠':'')+' · '+esc(st.status==='alternative'?'Alternative':st.status==='geplant'?'Erweiterung':'Bestand')+'</text>';
    svg+='<text x="'+(x+17)+'" y="'+(y+32)+'" font-size="11" fill="#355365">'+fmt(st.count,0)+' × '+fmt(st.p,0)+' W · '+fmt(number(st.count)*number(st.p)/1000,2)+' kWp</text></g>';
    if(valid){const targetY=head+mi*lineH+18;svg+='<path d="M '+(x+165)+' '+(y+21)+' H '+(x+186)+' V '+targetY+' H '+(x+colW-100)+'" fill="none" stroke="'+color+'" stroke-width="2"'+dash+'/>'}
