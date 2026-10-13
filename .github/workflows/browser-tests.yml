@@ -1,0 +1,19 @@
+name: Browser regression tests
+on:
+  pull_request:
+  push:
+    branches: [main, feature/v1.4-anlagenuebersicht]
+  workflow_dispatch:
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save playwright
+      - run: npx playwright install chromium --with-deps
+      - name: Browser tests (desktop and mobile)
+        run: node tests/run-browser-tests.cjs
