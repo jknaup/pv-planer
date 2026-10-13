@@ -24,6 +24,11 @@ check('1.6 MPPT-Reserve zeigt Strom und Spannung',()=>{e("strings=[{...moduleDef
 check('1.6 Freier MPPT wird angezeigt',()=>{e("strings=[];calc()");return w.document.getElementById('results').textContent.includes('MPPT frei')});
 check('1.6 Alternativen verändern Reserve nicht',()=>{e("strings=[{...moduleDefault(),status:'alternative'}];calc()");return w.document.getElementById('results').textContent.includes('MPPT frei')});
 check('1.6 Testzustand wiederherstellen',()=>{e('loadXml('+JSON.stringify(original)+')');return e('inverters.length===1')});
+check('1.8 MPPT-Kompaktübersicht Desktop und Mobil',()=>{e("strings=[{...moduleDefault(),wr:0,mppt:1,status:'bestand'}];calc()");const o=w.document.getElementById('plantOverview');return o.querySelectorAll('.mppt-summary-row .mppt-pulse-item').length>=2&&o.querySelectorAll('.plant-card .mppt-pulse-item').length>=2&&o.textContent.includes('MPPT 2 · frei')});
+check('1.7 Änderungen aktualisieren die MPPT-Auslastung sofort',()=>{const x=w.document.querySelector('#strings [data-k="imp"]');x.value='20';x.dispatchEvent(new w.Event('input',{bubbles:true}));return w.document.getElementById('plantOverview').textContent.includes('20 / 25 A')||w.document.getElementById('plantOverview').textContent.includes('20,00 / 25,00 A')});
+check('1.7 String-Warnungen direkt am String',()=>{const x=w.document.querySelector('#strings [data-k="count"]');x.value='35';x.dispatchEvent(new w.Event('input',{bubbles:true}));return w.document.querySelector('#si0').textContent.includes('Voc bei Kälte')});
+check('1.8 Alternativen belegen keinen MPPT',()=>{e("strings=[{...moduleDefault(),status:'alternative'}];calc()");return w.document.getElementById('plantOverview').textContent.includes('MPPT 1 · frei')});
+check('1.8 Testzustand wiederherstellen',()=>{e('loadXml('+JSON.stringify(original)+')');return e('inverters.length===1')});
 const failures=results.querySelectorAll('.fail').length;document.documentElement.dataset.testFailures=String(failures);const p=document.createElement('p');p.textContent=failures?'Fehlgeschlagen: '+failures:'Alle Browser-Selbsttests erfolgreich';p.className=failures?'fail':'ok';results.append(p)}
 document.getElementById('run').onclick=run;frame.onload=run;
 </script></html>
