@@ -274,7 +274,7 @@ function loadXml(xml){
  strings=nextStrings;batteries=nextBatteries;inverters=nextInverters;activeInverter=0;limits=inverters[0].limits;
  $('project').value=nextProject;$('tmin').value=nextTmin;$('tmax').value=nextTmax;
  $('model').value=inverters[0].model;$('vmax').value=inverters[0].vmax;$('pmax').value=inverters[0].pmax;$('mppts').value=limits.length;
- renderInverterTabs();renderLimits();renderStrings();calc()
+ renderInverterTabs();renderLimits();renderStrings();renderBatteries();calc()
 }
 $('addBattery').onclick=()=>{batteries.push(batteryDefault());renderBatteries();calc()};
 $('batteries').addEventListener('input',e=>{const x=e.target;if(x.dataset.bi===undefined)return;const b=batteries[+x.dataset.bi],k=x.dataset.bk;if(!b)return;b[k]=['name','coupling','status','compatibility'].includes(k)?x.value:['vmin','vmax','wrVmin','wrVmax','wrCharge','wrDischarge'].includes(k)&&x.value===''?'':number(x.value);updateBatteryOverview();renderPlantDiagram()});
